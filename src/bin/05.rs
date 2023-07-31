@@ -27,11 +27,8 @@ fn parse_crate_line(input: &str) -> Vec<Option<char>> {
         .chunks(4)
         .map(|c| c.iter().collect::<String>())
         .map(|c| {
-            if let Some(caps) = re.captures(c.as_str()) {
-                Some(caps[1].chars().next().unwrap())
-            } else {
-                None
-            }
+            re.captures(c.as_str())
+                .map(|caps| caps[1].chars().next().unwrap())
         })
         .collect()
 }
@@ -70,7 +67,6 @@ fn parse_moves(input: &str) -> Vec<Move> {
     let re = Regex::new(r"move (\d{1,2}) from (\d{1}) to (\d{1})").unwrap();
     input
         .lines()
-        .filter(|line| !line.starts_with("\n"))
         .map(|line| {
             let caps = re.captures(line).unwrap();
             Move {
