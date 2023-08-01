@@ -85,6 +85,13 @@ impl Supplies {
             self.stacks[m.to].crates.push(from_char);
         }
     }
+    fn move_stack_part2(&mut self, m: Move) {
+        let mut v: Vec<char> = Vec::with_capacity(m.quantity);
+        for _ in 1..=m.quantity {
+            v.insert(0, self.stacks[m.from].crates.pop().unwrap());
+        }
+        self.stacks[m.to].crates.extend(v);
+    }
 }
 
 fn get_top_crates(supplies: &Supplies) -> String {
@@ -106,8 +113,15 @@ pub fn part_one(input: &str) -> Option<String> {
     Some(answer)
 }
 
-pub fn part_two(input: &str) -> Option<u32> {
-    None
+pub fn part_two(input: &str) -> Option<String> {
+    let parsed_str = input.split("\n\n").collect::<Vec<&str>>();
+    let mut crates = parse_crates(parsed_str[0]);
+    let moves = parse_moves(parsed_str[1]);
+    for m in moves {
+        crates.move_stack_part2(m);
+    }
+    let answer = get_top_crates(&crates);
+    Some(answer)
 }
 
 fn main() {
@@ -243,6 +257,52 @@ mod tests {
     }
 
     #[test]
+    fn test_supplies_move_part2() {
+        let mut supplies = Supplies {
+            len: 3,
+            stacks: vec![
+                Stack {
+                    index: 0,
+                    crates: vec!['A', 'B', 'C'],
+                },
+                Stack {
+                    index: 1,
+                    crates: vec!['D', 'E'],
+                },
+                Stack {
+                    index: 2,
+                    crates: vec!['F'],
+                },
+            ],
+        };
+        supplies.move_stack_part2(Move {
+            quantity: 3,
+            from: 0,
+            to: 2,
+        });
+        assert_eq!(
+            supplies,
+            Supplies {
+                len: 3,
+                stacks: vec![
+                    Stack {
+                        index: 0,
+                        crates: vec![],
+                    },
+                    Stack {
+                        index: 1,
+                        crates: vec!['D', 'E'],
+                    },
+                    Stack {
+                        index: 2,
+                        crates: vec!['F', 'A', 'B', 'C'],
+                    },
+                ],
+            }
+        )
+    }
+
+    #[test]
     fn test_get_top_crates() {
         let supplies = Supplies {
             len: 3,
@@ -273,6 +333,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let input = advent_of_code::read_file("examples", 5);
-        assert_eq!(part_two(&input), None);
+        assert_eq!(part_two(&input), Some("MCD".to_string()));
     }
 }
